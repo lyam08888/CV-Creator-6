@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV CREATOR IA</title>
+  <meta name="description" content="AI-powered CV Creator with drag & drop functionality. Create professional resumes with artificial intelligence assistance.">
+  <meta name="keywords" content="CV, resume, AI, generator, PDF, drag-drop, professional">
+  <meta name="author" content="T.LAMARA">
+  
+  <!-- PWA Configuration -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CV Creator IA">
+  
+  <!-- Icons -->
+  <link rel="icon" href="./assets/favicon.svg">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="./css/app.css" as="style">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./css/app.css">
+  
+  <!-- DNS prefetch for external resources -->
+  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="//fonts.googleapis.com">
+  <!-- QRCode -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- html2canvas & jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <!-- Sortable.js for drag & drop -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" 
+          onerror="console.warn('CDN Sortable.js failed, loading fallback...'); loadSortableFallback();"></script>
+  <script>
+    function loadSortableFallback() {
+      const script = document.createElement('script');
+      script.src = './lib/sortable-fallback.js';
+      script.onload = function() {
+        console.log('✅ Fallback Sortable.js chargé avec succès');
+      };
+      document.head.appendChild(script);
+    }
+    
+    // Vérifier si Sortable est chargé après un délai
+    setTimeout(function() {
+      if (typeof window.Sortable === 'undefined') {
+        console.warn('⚠️ Sortable.js non détecté, chargement du fallback...');
+        loadSortableFallback();
+      }
+    }, 2000);
+  </script>
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <header class="app-header">
+        <img src="./assets/favicon.svg" class="logo" alt="logo">
+        <h1 class="title">CV CREATOR IA</h1>
+      </header>
+      <nav class="app-nav">
+        <details class="nav-group" open>
+          <summary>Profil</summary>
+          <button class="nav-btn active" data-form="personal-info">Informations Personnelles</button>
+          <button class="nav-btn" data-form="summary">Résumé</button>
+        </details>
+        <details class="nav-group">
+          <summary>Parcours</summary>
+          <button class="nav-btn" data-form="experience">Expérience</button>
+          <button class="nav-btn" data-form="education">Formation</button>
+          <button class="nav-btn" data-form="certifications">Certifications</button>
+          <button class="nav-btn" data-form="projects">Projets</button>
+        </details>
+        <details class="nav-group">
+          <summary>Compétences</summary>
+          <button class="nav-btn" data-form="skills">Compétences</button>
+          <button class="nav-btn" data-form="languages">Langues</button>
+        </details>
+        <details class="nav-group">
+          <summary>Autres</summary>
+          <button class="nav-btn" data-form="blocks">Organisation</button>
+          <button class="nav-btn" data-form="recruitment">Recrutement</button>
+          <button class="nav-btn" data-form="settings">Paramètres</button>
+          <button class="nav-btn" data-form="customization">Personnalisation</button>
+          <button class="nav-btn" data-form="actions">Actions</button>
+        </details>
+      </nav>
+    </aside>
+    
+    <main class="main-content">
+      <form id="cv-form">
+        <!-- INFORMATIONS PERSONNELLES -->
+        <section id="personal-info" class="form-section active">
+          <h2>Informations Personnelles</h2>
+          <div class="form-group">
+            <label for="rawInfoText">Collez ici toutes les informations brutes du candidat (CV, profil LinkedIn, etc.)</label>
+            <textarea id="rawInfoText" class="textarea" rows="8" placeholder="Nom, Prénom, Expériences, Formations, Compétences..."></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button type="button" id="btnAutoFillAI" class="btn">Remplir automatiquement le formulaire avec l'IA</button>
+              <button type="button" id="btnLoadDemo" class="btn btn-secondary">📋 Charger données de démonstration</button>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="fullName">Nom complet *</label>
+              <input type="text" id="fullName" name="fullName" class="input" required>
+            </div>
+            <div class="form-group">
+              <label for="jobTitle">Titre du poste *</label>
+              <input type="text" id="jobTitle" name="jobTitle" class="input" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" class="input" required>
+            </div>
+            <div class="form-group">
+              <label for="phone">Téléphone *</label>
+              <input type="tel" id="phone" name="phone" class="input" required>
+            </div>
+            <div class="form-group">
+              <label for="address">Adresse complète</label>
+              <input type="text" id="address" name="address" class="input" placeholder="123 Rue de la Paix, 75001 Paris">
+            </div>
+            <div class="form-group">
+              <label for="linkedin">LinkedIn</label>
+              <input type="url" id="linkedin" name="linkedin" class="input" placeholder="https://linkedin.com/in/votre-profil">
+            </div>
+            <div class="form-group">
+              <label for="website">Site Web / Portfolio</label>
+              <input type="url" id="website" name="website" class="input" placeholder="https://votre-site.com">
+            </div>
+            <div class="form-group">
+              <label for="github">GitHub</label>
+              <input type="url" id="github" name="github" class="input" placeholder="https://github.com/votre-username">
+            </div>
+          </div>
+        </section>
+
+        <!-- RÉSUMÉ PROFESSIONNEL -->
+        <section id="summary" class="form-section">
+          <h2>Résumé Professionnel</h2>
+          <div class="form-group">
+            <label for="summary-text">Votre résumé professionnel (2-3 phrases percutantes)</label>
+            <textarea id="summary-text" name="summary" class="textarea" rows="4" placeholder="Développeur Full Stack avec 5 ans d'expérience..."></textarea>
+            <button type="button" id="btnGenerateSummaryAI" class="btn">Générer avec IA</button>
+          </div>
+        </section>
+
+        <!-- EXPÉRIENCE PROFESSIONNELLE -->
+        <section id="experience" class="form-section">
+          <h2>Expérience Professionnelle</h2>
+          <div id="experience-list" class="form-list sortable">
+            <!-- Les expériences seront ajoutées ici dynamiquement -->
+          </div>
+          <button type="button" id="btnAddExperience" class="btn btn-add">+ Ajouter une expérience</button>
+        </section>
+
+        <!-- FORMATION -->
+        <section id="education" class="form-section">
+          <h2>Formation</h2>
+          <div id="education-list" class="form-list sortable">
+            <!-- Les formations seront ajoutées ici dynamiquement -->
+          </div>
+          <button type="button" id="btnAddEducation" class="btn btn-add">+ Ajouter une formation</button>
+        </section>
+
+        <!-- COMPÉTENCES -->
+        <section id="skills" class="form-section">
+          <h2>Compétences</h2>
+          <div class="form-group">
+            <label>Compétences Techniques</label>
+            <div id="technical-skills" class="skills-container">
+              <!-- Compétences techniques -->
+            </div>
+            <button type="button" id="btnAddTechnicalSkill" class="btn btn-small">+ Ajouter compétence technique</button>
+          </div>
+          <div class="form-group">
+            <label>Compétences Transversales</label>
+            <div id="soft-skills" class="skills-container">
+              <!-- Compétences transversales -->
+            </div>
+            <button type="button" id="btnAddSoftSkill" class="btn btn-small">+ Ajouter compétence transversale</button>
+          </div>
+          <button type="button" id="btnSuggestSkillsAI" class="btn">Suggérer des compétences avec IA</button>
+        </section>
+
+        <!-- LANGUES -->
+        <section id="languages" class="form-section">
+          <h2>Langues</h2>
+          <div id="languages-list" class="form-list">
+            <!-- Les langues seront ajoutées ici -->
+          </div>
+          <button type="button" id="btnAddLanguage" class="btn btn-add">+ Ajouter une langue</button>
+        </section>
+
+        <!-- CERTIFICATIONS -->
+        <section id="certifications" class="form-section">
+          <h2>Certifications</h2>
+          <div id="certifications-list" class="form-list">
+            <!-- Les certifications seront ajoutées ici -->
+          </div>
+          <button type="button" id="btnAddCertification" class="btn btn-add">+ Ajouter une certification</button>
+        </section>
+
+        <!-- PROJETS -->
+        <section id="projects" class="form-section">
+          <h2>Projets</h2>
+          <div id="projects-list" class="form-list sortable">
+            <!-- Les projets seront ajoutés ici -->
+          </div>
+          <button type="button" id="btnAddProject" class="btn btn-add">+ Ajouter un projet</button>
+        </section>
+
+        <!-- ORGANISATION DES BLOCS -->
+        <section id="blocks" class="form-section">
+          <h2>Organisation des blocs</h2>
+          <p>Glissez pour réorganiser les sections ou décochez pour les masquer.</p>
+          
+          <!-- Contrôles d'espacement -->
+          <div class="spacing-controls" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <h3 style="margin-bottom: 15px; font-size: 16px;">Contrôles d'espacement</h3>
+            
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+              <div class="form-group">
+                <label for="sectionSpacing">Espacement entre sections (mm)</label>
+                <input type="range" id="sectionSpacing" min="2" max="10" value="6" class="range-input">
+                <span class="range-value">6mm</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="itemSpacing">Espacement entre éléments (mm)</label>
+                <input type="range" id="itemSpacing" min="1" max="8" value="4" class="range-input">
+                <span class="range-value">4mm</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="pageMargins">Marges de page (mm)</label>
+                <input type="range" id="pageMargins" min="8" max="20" value="12" class="range-input">
+                <span class="range-value">12mm</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="lineHeight">Hauteur de ligne</label>
+                <input type="range" id="lineHeight" min="1.1" max="1.8" step="0.1" value="1.3" class="range-input">
+                <span class="range-value">1.3</span>
+              </div>
+            </div>
+            
+            <div style="margin-top: 15px;">
+              <button type="button" id="btnApplySpacing" class="btn btn-primary">Appliquer l'espacement</button>
+              <button type="button" id="btnResetSpacing" class="btn btn-secondary">Réinitialiser</button>
+            </div>
+          </div>
+          
+          <ul id="block-order-list" class="block-order-list"></ul>
+        </section>
+
+        <!-- INFORMATIONS RECRUTEMENT -->
+        <section id="recruitment" class="form-section">
+          <h2>Informations Recrutement</h2>
+          
+          <!-- Contrôle d'affichage de la bannière -->
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="showRecruitmentBanner" name="showRecruitmentBanner">
+              <span class="checkmark"></span>
+              Afficher la bannière de recrutement dans le CV
+            </label>
+            <small class="form-help">La bannière apparaîtra en haut du CV et pourra être déplacée par drag & drop</small>
+          </div>
+
+          <div id="recruitmentBannerControls" class="recruitment-controls" style="display: none;">
+            <h3>Configuration de la bannière</h3>
+            
+            <!-- Image de la bannière -->
+            <div class="form-group">
+              <label for="bannerImageUrl">Image de fond de la bannière (optionnel)</label>
+              <input type="url" id="bannerImageUrl" name="bannerImageUrl" class="input" placeholder="https://exemple.com/image-banniere.jpg">
+              <small class="form-help">Image qui s'affichera en arrière-plan de la bannière</small>
+            </div>
+
+            <!-- Informations recruteur -->
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="recruiterFirstName">Prénom du Recruteur</label>
+                <input type="text" id="recruiterFirstName" name="recruiterFirstName" class="input" placeholder="Marie">
+              </div>
+              <div class="form-group">
+                <label for="recruiterLastName">Nom du Recruteur</label>
+                <input type="text" id="recruiterLastName" name="recruiterLastName" class="input" placeholder="Dupont">
+              </div>
+              <div class="form-group">
+                <label for="recruiterPosition">Poste du Recruteur</label>
+                <input type="text" id="recruiterPosition" name="recruiterPosition" class="input" placeholder="Chargée de recrutement">
+              </div>
+              <div class="form-group">
+                <label for="recruiterPhone">Numéro de téléphone</label>
+                <input type="tel" id="recruiterPhone" name="recruiterPhone" class="input" placeholder="+33 1 23 45 67 89">
+              </div>
+              <div class="form-group">
+                <label for="recruiterEmail">Adresse email</label>
+                <input type="email" id="recruiterEmail" name="recruiterEmail" class="input" placeholder="marie.dupont@entreprise.com">
+              </div>
+              <div class="form-group">
+                <label for="companyName">Nom de l'Entreprise</label>
+                <input type="text" id="companyName" name="companyName" class="input" placeholder="TechCorp Solutions">
+              </div>
+              <div class="form-group">
+                <label for="companyLogoUrl">URL du Logo de l'Entreprise</label>
+                <input type="url" id="companyLogoUrl" name="companyLogoUrl" class="input" placeholder="https://exemple.com/logo.png">
+              </div>
+            </div>
+
+            <!-- Message personnalisé -->
+            <div class="form-group">
+              <label for="bannerMessage">Message personnalisé (optionnel)</label>
+              <textarea id="bannerMessage" name="bannerMessage" class="textarea" rows="3" placeholder="Candidature pour le poste de Développeur Full Stack..."></textarea>
+              <small class="form-help">Message qui s'affichera dans la bannière</small>
+            </div>
+
+            <!-- Style de la bannière -->
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="bannerStyle">Style de la bannière</label>
+                <select id="bannerStyle" name="bannerStyle" class="input">
+                  <option value="modern">Moderne (dégradé)</option>
+                  <option value="classic">Classique (couleur unie)</option>
+                  <option value="minimal">Minimal (bordure)</option>
+                  <option value="corporate">Corporate (professionnel)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="bannerColor">Couleur principale</label>
+                <input type="color" id="bannerColor" name="bannerColor" class="input" value="#3B82F6">
+              </div>
+            </div>
+
+            <!-- Position et taille -->
+            <div class="form-group">
+              <label for="bannerHeight">Hauteur de la bannière (mm)</label>
+              <input type="range" id="bannerHeight" name="bannerHeight" class="range-input" min="0" max="80" step="0.1" value="50">
+              <span class="range-value">50mm</span>
+            </div>
+
+            <!-- Fixer la bannière en haut -->
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="fixRecruitmentBanner" name="fixRecruitmentBanner">
+                <span class="checkmark"></span>
+                Fixer la bannière en haut du document
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- PARAMÈTRES -->
+        <section id="settings" class="form-section">
+          <h2>Paramètres</h2>
+          <div class="form-group">
+            <label for="geminiApiKey">Clé API Gemini</label>
+            <input type="password" id="geminiApiKey" class="input" placeholder="Saisir votre clé API Gemini">
+            <button type="button" id="btnSaveApiKey" class="btn">Sauvegarder la clé API</button>
+          </div>
+          <div class="form-group">
+            <label>Modèle de CV</label>
+            <select id="cvTemplate" class="input">
+              <option value="modern">Moderne</option>
+              <option value="classic">Classique</option>
+              <option value="creative">Créatif</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Couleur principale</label>
+            <input type="color" id="primaryColor" class="input" value="#2563eb">
+          </div>
+          <div class="form-group">
+            <label>Gestion des pages</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button type="button" id="btnAddPage" class="btn btn-small">+ Ajouter une page</button>
+              <button type="button" id="btnRemovePage" class="btn btn-small">- Supprimer la dernière page</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- PERSONNALISATION AVANCÉE -->
+        <section id="customization" class="form-section">
+          <h2>Personnalisation Avancée</h2>
+          
+          <!-- POLICE ET TYPOGRAPHIE -->
+          <div class="customization-group">
+            <h3>Police et Typographie</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fontFamily">Police principale</label>
+                <select id="fontFamily" class="input">
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="'Times New Roman', serif">Times New Roman</option>
+                  <option value="'Helvetica Neue', sans-serif">Helvetica Neue</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                  <option value="Verdana, sans-serif">Verdana</option>
+                  <option value="'Calibri', sans-serif">Calibri</option>
+                  <option value="'Open Sans', sans-serif">Open Sans</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="baseFontSize">Taille de base (pt)</label>
+                <input type="number" id="baseFontSize" class="input" value="11" min="8" max="16" step="0.1">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="lineHeight">Hauteur de ligne</label>
+                <input type="number" id="lineHeight" class="input" value="1.4" min="1.0" max="2.0" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="letterSpacing">Espacement lettres (pt)</label>
+                <input type="number" id="letterSpacing" class="input" value="0" min="-1" max="2" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <!-- MARGES ET ESPACEMENT -->
+          <div class="customization-group">
+            <h3>Marges et Espacement</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="pageMarginTop">Marge haut (mm)</label>
+                <input type="number" id="pageMarginTop" class="input" value="20" min="10" max="40" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="pageMarginBottom">Marge bas (mm)</label>
+                <input type="number" id="pageMarginBottom" class="input" value="20" min="10" max="40" step="0.1">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="pageMarginLeft">Marge gauche (mm)</label>
+                <input type="number" id="pageMarginLeft" class="input" value="20" min="10" max="40" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="pageMarginRight">Marge droite (mm)</label>
+                <input type="number" id="pageMarginRight" class="input" value="20" min="10" max="40" step="0.1">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sectionSpacing">Espacement sections (mm)</label>
+                <input type="number" id="sectionSpacing" class="input" value="6" min="2" max="15" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="paragraphSpacing">Espacement paragraphes (mm)</label>
+                <input type="number" id="paragraphSpacing" class="input" value="3" min="1" max="10" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <!-- COLONNES ET MISE EN PAGE -->
+          <div class="customization-group">
+            <h3>Colonnes et Mise en Page</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="layoutType">Type de mise en page</label>
+                <select id="layoutType" class="input">
+                  <option value="single">Une colonne</option>
+                  <option value="two-column">Deux colonnes</option>
+                  <option value="sidebar">Colonne latérale</option>
+                </select>
+              </div>
+              <div class="form-group" id="columnWidthGroup" style="display: none;">
+                <label for="leftColumnWidth">Largeur colonne gauche (%)</label>
+                <input type="number" id="leftColumnWidth" class="input" value="35" min="20" max="50" step="0.1">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="columnGap">Espacement colonnes (mm)</label>
+                <input type="number" id="columnGap" class="input" value="8" min="3" max="20" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="maxPages">Pages maximum</label>
+                <input type="number" id="maxPages" class="input" value="2" min="1" max="5" step="1">
+              </div>
+            </div>
+          </div>
+
+          <!-- TITRES ET EN-TÊTES -->
+          <div class="customization-group">
+            <h3>Titres et En-têtes</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="h1Size">Taille nom (pt)</label>
+                <input type="number" id="h1Size" class="input" value="18" min="14" max="24" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="h2Size">Taille titre poste (pt)</label>
+                <input type="number" id="h2Size" class="input" value="14" min="12" max="18" step="0.1">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="h3Size">Taille sections (pt)</label>
+                <input type="number" id="h3Size" class="input" value="13" min="11" max="16" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="titleSpacing">Espacement après titres (mm)</label>
+                <input type="number" id="titleSpacing" class="input" value="2" min="1" max="8" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <!-- LIGNES ET SÉPARATEURS -->
+          <div class="customization-group">
+            <h3>Lignes et Séparateurs</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="showSectionLines">Lignes sous sections</label>
+                <input type="checkbox" id="showSectionLines" checked>
+              </div>
+              <div class="form-group">
+                <label for="lineThickness">Épaisseur lignes (pt)</label>
+                <input type="number" id="lineThickness" class="input" value="1" min="0.1" max="3" step="0.1">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="lineColor">Couleur lignes</label>
+                <input type="color" id="lineColor" class="input" value="#cccccc">
+              </div>
+              <div class="form-group">
+                <label for="lineMargin">Marge lignes (mm)</label>
+                <input type="number" id="lineMargin" class="input" value="1" min="0" max="5" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <!-- BOUTONS D'ACTION -->
+          <div class="customization-actions">
+            <button type="button" id="btnApplyCustomization" class="btn btn-primary">✅ Appliquer les modifications</button>
+            <button type="button" id="btnOptimizeTwoColumns" class="btn btn-secondary" style="background: linear-gradient(135deg, #10b981, #059669);">✨ Optimiser pour 2 colonnes</button>
+            <button type="button" id="btnResetCustomization" class="btn btn-secondary">🔄 Réinitialiser</button>
+            <button type="button" id="btnSavePreset" class="btn btn-secondary">💾 Sauvegarder preset</button>
+            <button type="button" id="btnLoadPreset" class="btn btn-secondary">📁 Charger preset</button>
+          </div>
+        </section>
+
+        <!-- ACTIONS GÉNÉRALES -->
+        <section id="actions" class="form-section">
+          <h2>Actions</h2>
+          <div class="form-group actions-group">
+            <button id="btnGenerateIA" type="button" class="btn btn-primary">Générer le CV par IA</button>
+            <button id="btnExport" type="button" class="btn">Exporter PDF</button>
+            <button id="btnAnalyzeCVAI" type="button" class="btn">Analyser le CV avec IA</button>
+            <button id="btnToggleEdit" type="button" class="btn">Mode Édition</button>
+            <button id="btnOptimizeSpacing" type="button" class="btn btn-secondary">Optimiser Espaces</button>
+            <button id="btnNewCV" type="button" class="btn btn-secondary">Nouveau CV</button>
+            <button id="btnResetToDemo" type="button" class="btn btn-secondary">Charger Démo</button>
+          </div>
+        </section>
+      </form>
+    </main>
+    
+    <aside class="preview-panel">
+      <div class="preview-header">
+        <h3>Aperçu du CV</h3>
+
+        <div class="preview-actions">
+          <button id="btnPreviewAddPage" class="btn btn-small">+ Page</button>
+          <button id="btnPreviewRemovePage" class="btn btn-small">- Page</button>
+          <button id="btnToggleEdit" class="btn btn-small">Mode Édition</button>
+        </div>
+
+      </div>
+      <div id="cv-preview" class="cv-preview">
+        <!-- L'aperçu du CV sera généré ici avec des blocs drag & drop -->
+      </div>
+    </aside>
+  </div>
+
+  <!-- Barre d'outils d'édition -->
+  <div class="edit-toolbar">
+    <button onclick="document.execCommand('bold')">Gras</button>
+    <button onclick="document.execCommand('italic')">Italique</button>
+    <button onclick="document.execCommand('underline')">Souligné</button>
+    <button onclick="addNewPage()">+ Page</button>
+    <button onclick="toggleEditMode()">Quitter</button>
+  </div>
+
+  <script type="module" src="./js/error-handler.js?v=3"></script>
+  <script type="module" src="./js/enhanced-ui.js?v=3"></script>
+  <script type="module" src="./js/app.js?v=3"></script>
+  <script type="module" src="./demo-data.js?v=3"></script>
+  <script src="./verification-banniere.js?v=3"></script>
+  <script src="./diagnostic.js?v=3"></script>
+  <script>
+    // Gestionnaire pour le bouton de démonstration
+    document.addEventListener('DOMContentLoaded', function() {
+      const btnLoadDemo = document.getElementById('btnLoadDemo');
+      if (btnLoadDemo) {
+        btnLoadDemo.addEventListener('click', function() {
+          if (window.loadDemoData) {
+            window.loadDemoData();
+            alert('✅ Données de démonstration chargées ! Vérifiez l\'aperçu et testez les fonctionnalités de personnalisation.');
+          } else {
+            console.error('Fonction loadDemoData non disponible');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

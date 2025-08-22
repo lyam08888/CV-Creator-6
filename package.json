@@ -1,0 +1,51 @@
+{
+  "name": "cv-creator-ia",
+  "version": "2.0.0",
+  "description": "AI-powered CV Creator with drag & drop functionality",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "build": "node optimize.js",
+    "test": "echo \"No tests specified\" && exit 0",
+    "deploy": "npm run build && echo \"Build ready for deployment\"",
+    "dev": "python -m http.server 3000",
+    "validate": "node validate.js"
+  },
+  "keywords": [
+    "cv",
+    "resume",
+    "ai",
+    "generator",
+    "pdf",
+    "drag-drop",
+    "pwa"
+  ],
+  "author": "T.LAMARA",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/CV-Creator-4.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/CV-Creator-4/issues"
+  },
+  "homepage": "https://username.github.io/CV-Creator-4/",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
+  "pwa": {
+    "name": "CV Creator IA",
+    "short_name": "CVCreator",
+    "theme_color": "#8B5CF6",
+    "background_color": "#0F172A",
+    "display": "standalone",
+    "start_url": "./index.html"
+  }
+}
