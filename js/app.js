@@ -262,6 +262,9 @@ function initNavigation() {
       e.preventDefault();
       console.log(`Navigation clicked: ${targetId}`);
       
+      // Add bounce animation to the clicked button
+      this.classList.add('animate__animated', 'animate__bounceIn');
+
       // Remove active from all buttons
       navButtons.forEach(function(btn) {
         btn.classList.remove('active');
@@ -279,12 +282,17 @@ function initNavigation() {
       // Show target section
       const targetSection = document.getElementById(targetId);
       if (targetSection) {
-        targetSection.classList.add('active');
+        targetSection.classList.add('active', 'animate__animated', 'animate__fadeIn');
         targetSection.style.display = 'block';
         console.log(`✓ Section ${targetId} affichée`);
       } else {
         console.error(`❌ Section ${targetId} non trouvée`);
       }
+
+      // Remove animation classes after animation ends
+      this.addEventListener('animationend', () => {
+        this.classList.remove('animate__animated', 'animate__bounceIn');
+      });
     });
   });
   
@@ -648,13 +656,49 @@ function addProject(data = null) {
 
 // FONCTIONS UTILITAIRES
 function removeFormItem(button) {
-  button.closest('.form-item').remove();
-  generatePreviewInternal();
+  Swal.fire({
+    title: 'Êtes-vous sûr?',
+    text: "Cette action est irréversible!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Oui, supprimer!',
+    cancelButtonText: 'Annuler'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      button.closest('.form-item').remove();
+      generatePreviewInternal();
+      Swal.fire(
+        'Supprimé!',
+        'L\'élément a été supprimé.',
+        'success'
+      )
+    }
+  })
 }
 
 function removeSkill(button) {
-  button.closest('.skill-item').remove();
-  generatePreviewInternal();
+  Swal.fire({
+    title: 'Êtes-vous sûr?',
+    text: "Cette action est irréversible!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Oui, supprimer!',
+    cancelButtonText: 'Annuler'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      button.closest('.skill-item').remove();
+      generatePreviewInternal();
+      Swal.fire(
+        'Supprimé!',
+        'La compétence a été supprimée.',
+        'success'
+      )
+    }
+  })
 }
 
 function updateSkillLevel(range) {
@@ -1384,7 +1428,11 @@ function saveApiKey() {
   const apiKey = apiKeyInput.value.trim();
   
   if (!apiKey) {
-    alert('Veuillez saisir une clé API Gemini valide.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Veuillez saisir une clé API Gemini valide.',
+    });
     return;
   }
   
@@ -1392,15 +1440,12 @@ function saveApiKey() {
   localStorage.setItem('cvpro_api_key', apiKey);
   
   // Feedback visuel
-  const button = document.getElementById('btnSaveApiKey');
-  const originalText = button.textContent;
-  button.textContent = '✓ Sauvegardée';
-  button.style.backgroundColor = '#10b981';
-  
-  setTimeout(() => {
-    button.textContent = originalText;
-    button.style.backgroundColor = '';
-  }, 2000);
+  Swal.fire({
+    icon: 'success',
+    title: 'Clé API sauvegardée',
+    showConfirmButton: false,
+    timer: 1500
+  });
   
   console.log('Clé API Gemini sauvegardée');
 }
@@ -1411,14 +1456,18 @@ async function autoFillWithAI() {
   
   const rawText = document.getElementById('rawInfoText').value.trim();
   if (!rawText) {
-    alert('Veuillez coller les informations brutes du candidat dans le champ prévu à cet effet.');
+    Swal.fire('Oops...', 'Veuillez coller les informations brutes du candidat dans le champ prévu à cet effet.', 'warning');
     return;
   }
   
-  const button = document.getElementById('btnAutoFillAI');
-  const originalText = button.textContent;
-  button.textContent = 'Traitement en cours...';
-  button.disabled = true;
+  Swal.fire({
+    title: 'Traitement en cours...', 
+    text: 'L\'IA analyse les informations.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
   
   try {
     const prompt = `
@@ -1512,23 +1561,20 @@ ${rawText}
         // Remplir le formulaire avec les données extraites
         fillFormWithData(data);
         
-        alert('Formulaire rempli automatiquement avec succès !');
+        Swal.fire('Succès', 'Formulaire rempli automatiquement avec succès !', 'success');
         generatePreviewWrapper();
         
       } catch (parseError) {
         console.error('Erreur de parsing JSON:', parseError);
         console.log('Résultat brut:', result);
-        alert('Erreur lors de l\'analyse des données. Veuillez réessayer.');
+        Swal.fire('Erreur', 'Erreur lors de l\'analyse des données. Veuillez réessayer.', 'error');
       }
     }
     
   } catch (error) {
     console.error('Erreur Auto-fill AI:', error);
-    alert('Erreur lors du traitement automatique. Vérifiez votre clé API.');
-  } finally {
-    button.textContent = originalText;
-    button.disabled = false;
-  }
+    Swal.fire('Erreur', 'Erreur lors du traitement automatique. Vérifiez votre clé API.', 'error');
+  } 
 }
 
 async function generateSummaryAI() {
@@ -1536,14 +1582,18 @@ async function generateSummaryAI() {
   
   const formData = getFormData();
   if (!formData.fullName || !formData.jobTitle) {
-    alert('Veuillez remplir au moins le nom et le titre du poste pour générer un résumé.');
+    Swal.fire('Oops...', 'Veuillez remplir au moins le nom et le titre du poste pour générer un résumé.', 'warning');
     return;
   }
   
-  const button = document.getElementById('btnGenerateSummaryAI');
-  const originalText = button.textContent;
-  button.textContent = 'Génération...';
-  button.disabled = true;
+  Swal.fire({
+    title: 'Génération du résumé...', 
+    text: 'L\'IA rédige un résumé percutant.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
   
   try {
     const prompt = `
@@ -1572,15 +1622,12 @@ Retourne UNIQUEMENT le texte du résumé, sans guillemets ni formatage.
     if (result) {
       document.getElementById('summary-text').value = result.trim();
       generatePreviewWrapper();
-      alert('Résumé généré avec succès !');
+      Swal.fire('Succès', 'Résumé généré avec succès !', 'success');
     }
     
   } catch (error) {
     console.error('Erreur Generate Summary AI:', error);
-    alert('Erreur lors de la génération du résumé. Vérifiez votre clé API.');
-  } finally {
-    button.textContent = originalText;
-    button.disabled = false;
+    Swal.fire('Erreur', 'Erreur lors de la génération du résumé. Vérifiez votre clé API.', 'error');
   }
 }
 
@@ -1589,14 +1636,18 @@ async function suggestSkillsAI() {
   
   const formData = getFormData();
   if (!formData.jobTitle) {
-    alert('Veuillez remplir le titre du poste pour obtenir des suggestions de compétences.');
+    Swal.fire('Oops...', 'Veuillez remplir le titre du poste pour obtenir des suggestions de compétences.', 'warning');
     return;
   }
   
-  const button = document.getElementById('btnSuggestSkillsAI');
-  const originalText = button.textContent;
-  button.textContent = 'Suggestion...';
-  button.disabled = true;
+  Swal.fire({
+    title: 'Suggestion de compétences...', 
+    text: 'L\'IA recherche les compétences les plus pertinentes.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
   
   try {
     const prompt = `
@@ -1649,20 +1700,17 @@ Critères :
         }
         
         generatePreviewWrapper();
-        alert('Compétences suggérées ajoutées avec succès !');
+        Swal.fire('Succès', 'Compétences suggérées ajoutées avec succès !', 'success');
         
       } catch (parseError) {
         console.error('Erreur de parsing JSON:', parseError);
-        alert('Erreur lors de l\'analyse des suggestions. Veuillez réessayer.');
+        Swal.fire('Erreur', 'Erreur lors de l\'analyse des suggestions. Veuillez réessayer.', 'error');
       }
     }
     
   } catch (error) {
     console.error('Erreur Suggest Skills AI:', error);
-    alert('Erreur lors de la suggestion de compétences. Vérifiez votre clé API.');
-  } finally {
-    button.textContent = originalText;
-    button.disabled = false;
+    Swal.fire('Erreur', 'Erreur lors de la suggestion de compétences. Vérifiez votre clé API.', 'error');
   }
 }
 
@@ -1671,14 +1719,18 @@ async function generateFullCVWithAI() {
   
   const rawText = document.getElementById('rawInfoText').value.trim();
   if (!rawText) {
-    alert('Veuillez coller les informations brutes du candidat pour générer un CV complet.');
+    Swal.fire('Oops...', 'Veuillez coller les informations brutes du candidat pour générer un CV complet.', 'warning');
     return;
   }
   
-  const button = document.getElementById('btnGenerateIA');
-  const originalText = button.textContent;
-  button.textContent = 'Génération complète...';
-  button.disabled = true;
+  Swal.fire({
+    title: 'Génération complète du CV...', 
+    text: 'L\'IA est en train de créer un CV complet.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
   
   try {
     // Utiliser la même logique que autoFillWithAI mais avec un prompt plus complet
@@ -1689,14 +1741,11 @@ async function generateFullCVWithAI() {
       await generateSummaryAI();
     }, 1000);
     
-    alert('CV complet généré avec succès !');
+    Swal.fire('Succès', 'CV complet généré avec succès !', 'success');
     
   } catch (error) {
     console.error('Erreur Generate Full CV AI:', error);
-    alert('Erreur lors de la génération complète. Vérifiez votre clé API.');
-  } finally {
-    button.textContent = originalText;
-    button.disabled = false;
+    Swal.fire('Erreur', 'Erreur lors de la génération complète. Vérifiez votre clé API.', 'error');
   }
 }
 
@@ -1705,14 +1754,18 @@ async function analyzeCVWithAI() {
   
   const formData = getFormData();
   if (!formData.fullName || !formData.jobTitle) {
-    alert('Veuillez remplir au moins les informations de base pour analyser le CV.');
+    Swal.fire('Oops...', 'Veuillez remplir au moins les informations de base pour analyser le CV.', 'warning');
     return;
   }
   
-  const button = document.getElementById('btnAnalyzeCVAI');
-  const originalText = button.textContent;
-  button.textContent = 'Analyse...';
-  button.disabled = true;
+  Swal.fire({
+    title: 'Analyse du CV en cours...', 
+    text: 'L\'IA examine votre CV pour des améliorations.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
   
   try {
     const cvText = document.getElementById('cv-preview').innerText;
@@ -1737,26 +1790,16 @@ Sois constructif et professionnel.
     });
     
     if (result) {
-      // Afficher l'analyse dans une modal ou alert
-      const analysisWindow = window.open('', '_blank', 'width=600,height=400');
-      analysisWindow.document.write(`
-        <html>
-          <head><title>Analyse du CV</title></head>
-          <body style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2>Analyse de votre CV</h2>
-            <div style="white-space: pre-wrap; line-height: 1.6;">${result}</div>
-            <button onclick="window.close()" style="margin-top: 20px; padding: 10px 20px;">Fermer</button>
-          </body>
-        </html>
-      `);
+      Swal.fire({
+        title: 'Analyse du CV',
+        html: `<div style="text-align: left; white-space: pre-wrap;">${result}</div>`,
+        width: '80%'
+      });
     }
     
   } catch (error) {
     console.error('Erreur Analyze CV AI:', error);
-    alert('Erreur lors de l\'analyse du CV. Vérifiez votre clé API.');
-  } finally {
-    button.textContent = originalText;
-    button.disabled = false;
+    Swal.fire('Erreur', 'Erreur lors de l\'analyse du CV. Vérifiez votre clé API.', 'error');
   }
 }
 
@@ -1767,13 +1810,18 @@ async function improveWithAI(button) {
   const currentText = textarea.value.trim();
   
   if (!currentText) {
-    alert('Veuillez saisir du texte à améliorer.');
+    Swal.fire('Oops...', 'Veuillez saisir du texte à améliorer.', 'warning');
     return;
   }
   
-  const originalText = button.textContent;
-  button.textContent = 'Amélioration...';
-  button.disabled = true;
+  Swal.fire({
+    title: 'Amélioration du texte...', 
+    text: 'L\'IA peaufine votre texte.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
   
   try {
     const prompt = `
@@ -1781,9 +1829,9 @@ Améliore ce texte professionnel pour un CV :
 
 "${currentText}"
 
-Critères d'amélioration :
+Critères d\'amélioration :
 - Plus impactant et professionnel
-- Utilise des verbes d'action
+- Utilise des verbes d\'action
 - Quantifie les résultats quand possible
 - Garde le même sens mais améliore la formulation
 - Reste concis et pertinent
@@ -1800,15 +1848,12 @@ Retourne UNIQUEMENT le texte amélioré, sans guillemets.
     if (result) {
       textarea.value = result.trim();
       generatePreviewWrapper();
-      alert('Texte amélioré avec succès !');
+      Swal.fire('Succès', 'Texte amélioré avec succès !', 'success');
     }
     
   } catch (error) {
     console.error('Erreur Improve Text AI:', error);
-    alert('Erreur lors de l\'amélioration du texte. Vérifiez votre clé API.');
-  } finally {
-    button.textContent = originalText;
-    button.disabled = false;
+    Swal.fire('Erreur', 'Erreur lors de l\'amélioration du texte. Vérifiez votre clé API.', 'error');
   }
 }
 
@@ -1904,7 +1949,7 @@ function exportToPDF() {
   
   const cvPreview = document.getElementById('cv-preview');
   if (!cvPreview) {
-    alert('Erreur: Impossible de trouver le contenu du CV');
+    Swal.fire('Erreur', 'Impossible de trouver le contenu du CV', 'error');
     return;
   }
 
@@ -1919,10 +1964,14 @@ function exportToPDF() {
   });
 
   // Afficher un indicateur de chargement
-  const button = document.getElementById('btnExport');
-  const originalText = button.textContent;
-  button.textContent = 'Export en cours...';
-  button.disabled = true;
+  Swal.fire({
+    title: 'Export en cours...', 
+    text: 'Le PDF est en cours de génération.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
   
   // Utiliser html2canvas et jsPDF pour l'export
   html2canvas(cvPreview, {
@@ -1960,13 +2009,11 @@ function exportToPDF() {
     const fileName = `CV_${(formData.fullName || 'CV').replace(/\s+/g, '_')}.pdf`;
     pdf.save(fileName);
     
-    alert('PDF exporté avec succès !');
+    Swal.fire('Succès', 'PDF exporté avec succès !', 'success');
   }).catch(error => {
     console.error('Erreur lors de l\'export PDF:', error);
-    alert('Erreur lors de l\'export PDF. Veuillez réessayer.');
+    Swal.fire('Erreur', 'Erreur lors de l\'export PDF. Veuillez réessayer.', 'error');
   }).finally(() => {
-    button.textContent = originalText;
-    button.disabled = false;
     overflowIndicators.forEach(indicator => {
       indicator.style.display = '';
     });
@@ -2142,22 +2189,37 @@ function loadRecruitmentBannerData() {
 
 // FONCTION POUR CRÉER UN NOUVEAU CV
 function createNewCV() {
-  if (confirm('Êtes-vous sûr de vouloir créer un nouveau CV ? Toutes les données actuelles seront perdues.')) {
-    // Vider tous les champs du formulaire
-    clearAllFormFields();
+  Swal.fire({
+    title: 'Êtes-vous sûr?',
+    text: "Toutes les données actuelles seront perdues.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Oui, créer un nouveau CV!',
+    cancelButtonText: 'Annuler'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Vider tous les champs du formulaire
+      clearAllFormFields();
 
-    // Recharger la bannière et régénérer l'aperçu
-    loadRecruitmentBannerData();
-    generatePreviewWrapper();
-    
-    // Retourner à la première section
-    const firstNavBtn = document.querySelector('.nav-btn[data-form="personal-info"]');
-    if (firstNavBtn) {
-      firstNavBtn.click();
+      // Recharger la bannière et régénérer l'aperçu
+      loadRecruitmentBannerData();
+      generatePreviewWrapper();
+      
+      // Retourner à la première section
+      const firstNavBtn = document.querySelector('.nav-btn[data-form="personal-info"]');
+      if (firstNavBtn) {
+        firstNavBtn.click();
+      }
+      
+      Swal.fire(
+        'Nouveau CV créé!',
+        'Vous pouvez maintenant saisir vos informations.',
+        'success'
+      )
     }
-    
-    alert('Nouveau CV créé ! Vous pouvez maintenant saisir vos informations.');
-  }
+  })
 }
 
 // FONCTION POUR VIDER TOUS LES CHAMPS
@@ -2209,18 +2271,33 @@ function clearAllFormFields() {
 
 // FONCTION POUR CHARGER LES DONNÉES DE DÉMONSTRATION
 function loadDemoData() {
-  if (confirm('Charger les données de démonstration ? Cela remplacera les données actuelles.')) {
-    // Vider d'abord les champs
-    clearAllFormFields();
-    
-    // Remplir avec les données d'exemple
-    populateExampleData();
-    
-    // Régénérer l'aperçu
-    generatePreviewWrapper();
-    
-    alert('✅ Données de démonstration chargées ! Vous pouvez maintenant tester toutes les fonctionnalités.');
-  }
+  Swal.fire({
+    title: 'Charger les données de démonstration?',
+    text: "Cela remplacera les données actuelles.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Oui, charger!',
+    cancelButtonText: 'Annuler'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Vider d'abord les champs
+      clearAllFormFields();
+      
+      // Remplir avec les données d'exemple
+      populateExampleData();
+      
+      // Régénérer l'aperçu
+      generatePreviewWrapper();
+      
+      Swal.fire(
+        'Données chargées!',
+        'Les données de démonstration ont été chargées.',
+        'success'
+      )
+    }
+  })
 }
 
 // FONCTIONS UTILITAIRES POUR LE FORMATAGE
@@ -2370,13 +2447,19 @@ function optimizeSpacingBasic() {
 
 // Wrapper pour generatePreview qui récupère les données du formulaire
 function generatePreviewWrapper() {
+  const overlay = document.querySelector('.preview-loading-overlay');
   try {
+    overlay.classList.add('active');
     const formData = getFormData();
     logSuccess('Form data retrieved successfully');
     generatePreviewInternal();
     logSuccess('Preview generated successfully');
   } catch (error) {
     logError('Error in generatePreviewWrapper:', error);
+  } finally {
+    setTimeout(() => {
+      overlay.classList.remove('active');
+    }, 500); // Attendre un peu pour que l'aperçu se mette à jour
   }
 }
 
