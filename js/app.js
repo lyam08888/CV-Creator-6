@@ -2391,7 +2391,7 @@ async function optimizeSpacingManual() {
   }, 500);
 }
 
-// Optimisation basique des espaces
+// Optimisation basique des espaces et espacement non sécable
 function optimizeSpacingBasic() {
   const sections = document.querySelectorAll('.cv-section');
   
@@ -2404,8 +2404,19 @@ function optimizeSpacingBasic() {
       }
     });
     
-    // Optimiser les marges des éléments
-    const items = section.querySelectorAll('.cv-item');
+    // Appliquer les propriétés d'espacement non sécable
+    section.style.pageBreakInside = 'avoid';
+    section.style.breakInside = 'avoid';
+    
+    // Optimiser l'espacement des éléments internes
+    const items = section.querySelectorAll('.cv-item, .experience-item, .education-item, .project-item');
+    items.forEach(item => {
+      item.style.pageBreakInside = 'avoid';
+      item.style.breakInside = 'avoid';
+    });
+    
+    // Optimiser les marges des éléments (éviter la duplication)
+    // const items déjà défini ci-dessus
     items.forEach((item, index) => {
       // Réduire l'espacement entre les éléments
       item.style.marginBottom = '4px';

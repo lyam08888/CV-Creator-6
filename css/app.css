@@ -3036,7 +3036,51 @@ label {
   line-height: 1.2;
 }
 
-/* Amélioration de la densité d'information */
+/* Amélioration de la densité d'information et espacement non sécable */
+.cv-preview .cv-section,
+.cv-page .cv-section {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  orphans: 2;
+  widows: 2;
+}
+
+/* Espacement non sécable spécifique pour les sections importantes */
+.cv-preview .cv-section.cv-experience,
+.cv-preview .cv-section.cv-education,
+.cv-preview .cv-section.cv-skills,
+.cv-preview .cv-section.cv-recruitment-banner,
+.cv-page .cv-section.cv-experience,
+.cv-page .cv-section.cv-education,
+.cv-page .cv-section.cv-skills,
+.cv-page .cv-section.cv-recruitment-banner {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  display: block;
+  overflow: visible;
+}
+
+/* Éviter les coupures dans les éléments de contenu */
+.cv-preview .cv-item,
+.cv-preview .experience-item,
+.cv-preview .education-item,
+.cv-preview .project-item,
+.cv-page .cv-item,
+.cv-page .experience-item,
+.cv-page .education-item,
+.cv-page .project-item {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin-bottom: var(--cv-paragraph-spacing, 2mm);
+}
+
+/* Espacement cohérent entre les sections */
+.cv-preview .cv-section + .cv-section,
+.cv-page .cv-section + .cv-section {
+  margin-top: var(--cv-section-spacing, 4mm);
+}
+
+/* Amélioration spécifique pour le layout deux colonnes */
 .cv-preview.layout-two-column .cv-section,
 .cv-page.layout-two-column .cv-section {
   page-break-inside: avoid;
@@ -3157,7 +3201,7 @@ label {
   position: relative;
   width: 100%;
   min-height: var(--banner-height, 20mm);
-  margin-bottom: var(--cv-section-spacing, 3mm);
+  margin-bottom: var(--cv-section-spacing, 4mm);
   border-radius: 8px;
   overflow: hidden;
   display: flex;
@@ -3167,6 +3211,10 @@ label {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  /* Espacement non sécable pour la bannière */
+  page-break-inside: avoid;
+  break-inside: avoid;
+  page-break-after: avoid;
 }
 
 /* Masquer complètement la bannière si hauteur = 0 */
