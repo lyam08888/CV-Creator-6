@@ -27,6 +27,12 @@ export function generatePreview(formData) {
 
 // Fonction pour optimiser les espaces vides
 export function optimizeSpacing() {
+  const preview = document.getElementById('cv-preview');
+  if (preview) {
+    // Remplacer les espaces insécables par des espaces classiques
+    preview.innerHTML = preview.innerHTML.replace(/\u00A0/g, ' ');
+  }
+
   const sections = document.querySelectorAll('.cv-section');
   
   sections.forEach(section => {
