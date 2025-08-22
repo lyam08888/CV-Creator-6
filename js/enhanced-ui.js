@@ -11,6 +11,9 @@ let gridOverlay = null;
 let alignmentGuides = null;
 
 // Initialisation des fonctionnalités avancées
+/**
+ * Initializes all the enhanced UI features.
+ */
 export function initEnhancedUI() {
   console.log('Initializing enhanced UI features...');
   
@@ -192,6 +195,9 @@ function createContextMenu() {
     </div>
     <div class="context-menu-item" onclick="editSection()">
       <span>✏️</span> Modifier
+    </div>
+    <div class="context-menu-item" onclick="copySectionContent()">
+      <span>✂️</span> Copier le contenu
     </div>
     <div class="context-menu-separator"></div>
     <div class="context-menu-item" onclick="moveUp()">
@@ -420,28 +426,22 @@ function showChangeIndicator() {
 }
 
 function showNotification(message, type = 'info') {
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  notification.textContent = message;
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--primary-color);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
-    z-index: 4000;
-    animation: fadeInUp 0.3s ease;
-  `;
-  
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    notification.style.animation = 'fadeOutUp 0.3s ease';
-    setTimeout(() => notification.remove(), 300);
-  }, 3000);
+  const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer)
+      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+  })
+
+  Toast.fire({
+    icon: type,
+    title: message
+  })
 }
 
 function adjustBrightness(color, percent) {
@@ -474,6 +474,23 @@ function clearSelection() {
   if (counter) {
     counter.classList.remove('active');
   }
+}
+
+function copySectionContent() {
+  const targetId = contextMenu?.dataset.target;
+  if (!targetId) return;
+  
+  const section = document.querySelector(`[data-section="${targetId}"]`);
+  if (section) {
+    const content = section.innerText;
+    navigator.clipboard.writeText(content).then(() => {
+      showNotification('Contenu copié dans le presse-papiers', 'success');
+    }).catch(err => {
+      showNotification('Erreur lors de la copie', 'error');
+      console.error('Could not copy text: ', err);
+    });
+  }
+  hideContextMenu();
 }
 
 // ===== ACTIONS DU MENU CONTEXTUEL =====
@@ -519,26 +536,48 @@ function moveDown() {
 
 function deleteSection() {
   const targetId = contextMenu?.dataset.target;
-  if (confirm('Êtes-vous sûr de vouloir supprimer cette section ?')) {
-    const section = document.querySelector(`[data-section="${targetId}"]`);
-    if (section) {
-      section.remove();
-      showNotification('Section supprimée');
+  Swal.fire({
+    title: 'Êtes-vous sûr?',
+    text: "Cette action est irréversible!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Oui, supprimer!',
+    cancelButtonText: 'Annuler'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const section = document.querySelector(`[data-section="${targetId}"]`);
+      if (section) {
+        section.remove();
+        showNotification('Section supprimée', 'success');
+      }
     }
-  }
+  });
   hideContextMenu();
 }
 
 function deleteSelectedElements() {
   if (selectedElements.size === 0) return;
   
-  if (confirm(`Supprimer ${selectedElements.size} élément(s) sélectionné(s) ?`)) {
-    selectedElements.forEach(element => {
-      element.remove();
-    });
-    clearSelection();
-    showNotification(`${selectedElements.size} élément(s) supprimé(s)`);
-  }
+  Swal.fire({
+    title: `Supprimer ${selectedElements.size} élément(s) sélectionné(s) ?`,
+    text: "Cette action est irréversible!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Oui, supprimer!',
+    cancelButtonText: 'Annuler'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      selectedElements.forEach(element => {
+        element.remove();
+      });
+      clearSelection();
+      showNotification(`${selectedElements.size} élément(s) supprimé(s)`, 'success');
+    }
+  });
 }
 
 // ===== ÉVÉNEMENTS DE DRAG & DROP AMÉLIORÉS =====
@@ -628,6 +667,9 @@ function showAlignmentGuides(element) {
   }
 }
 
+/**
+ * Hides the alignment guides.
+ */
 function hideAlignmentGuides() {
   const guides = document.querySelectorAll('.guide-line');
   guides.forEach(guide => {

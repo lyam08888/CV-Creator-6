@@ -1,0 +1,169 @@
+/* Print-friendly styles */
+
+@media print {
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  .app-container {
+    display: block;
+  }
+
+  .sidebar,
+  .main-content,
+  .preview-panel {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    border: none;
+  }
+
+  .sidebar,
+  .main-content {
+    display: none;
+  }
+
+  .cv-preview {
+    width: 100%;
+    height: auto;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cv-page {
+    width: 100%;
+    height: auto;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+    page-break-after: auto;
+  }
+
+  .cv-section {
+    margin-bottom: 10mm;
+  }
+
+  .cv-section-title {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-bottom: 5mm;
+  }
+
+  .cv-name {
+    font-size: 24pt;
+    font-weight: bold;
+  }
+
+  .cv-title {
+    font-size: 18pt;
+  }
+
+  .cv-contact-item {
+    font-size: 12pt;
+  }
+
+  .cv-experience-title {
+    font-size: 14pt;
+    font-weight: bold;
+  }
+
+  .cv-experience-period {
+    font-size: 12pt;
+  }
+
+  .cv-experience-company {
+    font-size: 12pt;
+  }
+
+  .cv-experience-description {
+    font-size: 12pt;
+  }
+
+  .cv-education-degree {
+    font-size: 14pt;
+    font-weight: bold;
+  }
+
+  .cv-education-period {
+    font-size: 12pt;
+  }
+
+  .cv-education-school {
+    font-size: 12pt;
+  }
+
+  .cv-education-description {
+    font-size: 12pt;
+  }
+
+  .cv-skills-category h4 {
+    font-size: 14pt;
+    font-weight: bold;
+  }
+
+  .cv-skill-name {
+    font-size: 12pt;
+  }
+
+  .cv-skill-level {
+    display: none;
+  }
+
+  .cv-skill-bar {
+    display: none;
+  }
+
+  .cv-language-name {
+    font-size: 12pt;
+  }
+
+  .cv-language-level {
+    font-size: 12pt;
+  }
+
+  .cv-certification-name {
+    font-size: 12pt;
+    font-weight: bold;
+  }
+
+  .cv-certification-details {
+    font-size: 12pt;
+  }
+
+  .cv-project-name {
+    font-size: 14pt;
+    font-weight: bold;
+  }
+
+  .cv-project-period {
+    font-size: 12pt;
+  }
+
+  .cv-project-description {
+    font-size: 12pt;
+  }
+
+  .cv-project-url {
+    display: none;
+  }
+
+  .drag-handle,
+  .edit-toolbar,
+  .floating-toolbar,
+  .context-menu,
+  .grid-overlay,
+  .alignment-guides,
+  .selection-box,
+  .selection-counter,
+  .performance-indicator,
+  .btn-customize,
+  .preview-loading-overlay {
+    display: none !important;
+  }
+}

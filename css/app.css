@@ -499,6 +499,7 @@ label {
 
 .input:invalid:not(:placeholder-shown) {
   border-color: #ef4444;
+  animation: shake 0.5s ease-in-out;
 }
 
 .textarea {

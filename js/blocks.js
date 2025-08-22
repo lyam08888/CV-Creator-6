@@ -1,5 +1,8 @@
 // Gestion de l'onglet de disposition des blocs
 
+/**
+ * Initializes the blocks tab, which allows the user to reorder and toggle the visibility of the CV sections.
+ */
 export function initBlocksTab() {
   const list = document.getElementById('block-order-list');
   if (!list) return;
@@ -161,16 +164,17 @@ function applySpacingSettings() {
   window.dispatchEvent(new CustomEvent('regeneratePreview'));
   
   // Feedback visuel
-  const btn = document.getElementById('btnApplySpacing');
-  const originalText = btn.textContent;
-  btn.textContent = '✓ Appliqué';
-  btn.style.background = '#10b981';
-  setTimeout(() => {
-    btn.textContent = originalText;
-    btn.style.background = '';
-  }, 2000);
+  Swal.fire({
+    icon: 'success',
+    title: 'Espacement appliqué',
+    showConfirmButton: false,
+    timer: 1500
+  });
 }
 
+/**
+ * Resets the spacing settings to their default values.
+ */
 function resetSpacingSettings() {
   // Réinitialiser les valeurs par défaut
   const defaults = {
