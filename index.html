@@ -28,6 +28,9 @@
   <link rel="stylesheet" href="./css/print.css" media="print">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
   
   <!-- DNS prefetch for external resources -->
   <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
@@ -70,8 +73,8 @@
       <nav class="app-nav">
         <details class="nav-group" open>
           <summary>Profil</summary>
-          <button class="nav-btn active" data-form="personal-info">Informations Personnelles</button>
-          <button class="nav-btn" data-form="summary">Résumé</button>
+          <button class="nav-btn active" data-form="personal-info" data-tippy-content="Informations personnelles">Informations Personnelles</button>
+          <button class="nav-btn" data-form="summary" data-tippy-content="Résumé professionnel">Résumé</button>
         </details>
         <details class="nav-group">
           <summary>Parcours</summary>
@@ -336,11 +339,29 @@
                   <option value="classic">Classique (couleur unie)</option>
                   <option value="minimal">Minimal (bordure)</option>
                   <option value="corporate">Corporate (professionnel)</option>
+                  <option value="magnificent">Magnifique</option>
                 </select>
               </div>
               <div class="form-group">
                 <label for="bannerColor">Couleur principale</label>
                 <input type="color" id="bannerColor" name="bannerColor" class="input" value="#3B82F6">
+              </div>
+              <div class="form-group">
+                <label for="bannerTextColor">Couleur du texte</label>
+                <input type="color" id="bannerTextColor" name="bannerTextColor" class="input" value="#FFFFFF">
+              </div>
+              <div class="form-group">
+                <label for="bannerFont">Police</label>
+                <select id="bannerFont" name="bannerFont" class="input">
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="'Times New Roman', serif">Times New Roman</option>
+                  <option value="'Helvetica Neue', sans-serif">Helvetica Neue</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                  <option value="Verdana, sans-serif">Verdana</option>
+                  <option value="'Calibri', sans-serif">Calibri</option>
+                  <option value="'Open Sans', sans-serif">Open Sans</option>
+                </select>
               </div>
             </div>
 
@@ -563,13 +584,13 @@
         <section id="actions" class="form-section">
           <h2>Actions</h2>
           <div class="form-group actions-group">
-            <button id="btnGenerateIA" type="button" class="btn btn-primary">Générer le CV par IA</button>
-            <button id="btnExport" type="button" class="btn">Exporter PDF</button>
-            <button id="btnAnalyzeCVAI" type="button" class="btn">Analyser le CV avec IA</button>
-            <button id="btnToggleEdit" type="button" class="btn">Mode Édition</button>
-            <button id="btnOptimizeSpacing" type="button" class="btn btn-secondary">Optimiser Espaces</button>
-            <button id="btnNewCV" type="button" class="btn btn-secondary">Nouveau CV</button>
-            <button id="btnResetToDemo" type="button" class="btn btn-secondary">Charger Démo</button>
+            <button id="btnGenerateIA" type="button" class="btn btn-primary" data-tippy-content="Générer le CV complet avec l'IA">Générer le CV par IA</button>
+            <button id="btnAnalyzeCVAI" type="button" class="btn" data-tippy-content="Analyser le CV avec l'IA">Analyser le CV avec IA</button>
+            <button id="btnExport" type="button" class="btn" data-tippy-content="Exporter le CV au format PDF">Exporter PDF</button>
+            <button id="btnToggleEdit" type="button" class="btn" data-tippy-content="Activer/Désactiver le mode édition">Mode Édition</button>
+            <button id="btnOptimizeSpacing" type="button" class="btn btn-secondary" data-tippy-content="Optimiser automatiquement les espacements">Optimiser Espaces</button>
+            <button id="btnNewCV" type="button" class="btn btn-secondary" data-tippy-content="Créer un nouveau CV (les données actuelles seront perdues)">Nouveau CV</button>
+            <button id="btnResetToDemo" type="button" class="btn btn-secondary" data-tippy-content="Charger les données de démonstration">Charger Démo</button>
           </div>
         </section>
       </form>
@@ -580,9 +601,9 @@
         <h3>Aperçu du CV</h3>
 
         <div class="preview-actions">
-          <button id="btnPreviewAddPage" class="btn btn-small">+ Page</button>
-          <button id="btnPreviewRemovePage" class="btn btn-small">- Page</button>
-          <button id="btnToggleEdit" class="btn btn-small">Mode Édition</button>
+          <button id="btnPreviewAddPage" class="btn btn-small" data-tippy-content="Ajouter une page">+ Page</button>
+          <button id="btnPreviewRemovePage" class="btn btn-small" data-tippy-content="Supprimer la dernière page">- Page</button>
+          <button id="btnToggleEdit" class="btn btn-small" data-tippy-content="Activer/Désactiver le mode édition">Mode Édition</button>
         </div>
 
       </div>

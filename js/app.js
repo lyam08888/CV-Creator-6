@@ -420,6 +420,7 @@ function addExperience(data = null) {
       <label>Description des missions *</label>
       <textarea name="experience[${index}][description]" class="textarea" rows="4" required>${experienceData.description}</textarea>
       <button type="button" class="btn-ai" onclick="improveWithAI(this)">✨ Améliorer avec IA</button>
+      <button type="button" class="btn-ai" onclick="improveWithAI(this)">✨ Améliorer avec IA</button>
     </div>
     <div class="form-group">
       <label>Technologies utilisées (séparées par des virgules)</label>
@@ -643,6 +644,7 @@ function addProject(data = null) {
     <div class="form-group">
       <label>Description</label>
       <textarea name="projects[${index}][description]" class="textarea" rows="3">${projectData.description}</textarea>
+      <button type="button" class="btn-ai" onclick="improveWithAI(this)">✨ Améliorer avec IA</button>
     </div>
     <div class="form-group">
       <label>Technologies utilisées</label>
@@ -795,6 +797,7 @@ function generatePreviewInternal() {
         editableElements.forEach(element => {
           element.setAttribute('contenteditable', 'true');
         });
+        initInteractJs();
       }, 100);
     }
   } catch (error) {
@@ -1347,6 +1350,8 @@ function getFormData() {
   data.bannerMessage = document.getElementById('bannerMessage')?.value || '';
   data.bannerStyle = document.getElementById('bannerStyle')?.value || 'modern';
   data.bannerColor = document.getElementById('bannerColor')?.value || '#3B82F6';
+  data.bannerTextColor = document.getElementById('bannerTextColor')?.value || '#FFFFFF';
+  data.bannerFont = document.getElementById('bannerFont')?.value || 'Arial, sans-serif';
   data.bannerHeight = document.getElementById('bannerHeight')?.value || '50';
   
   return data;
@@ -1752,12 +1757,14 @@ async function generateFullCVWithAI() {
 async function analyzeCVWithAI() {
   console.log('Analyze CV with AI...');
   
-  const formData = getFormData();
-  if (!formData.fullName || !formData.jobTitle) {
-    Swal.fire('Oops...', 'Veuillez remplir au moins les informations de base pour analyser le CV.', 'warning');
+  const cvPreview = document.getElementById('cv-preview');
+  if (!cvPreview) {
+    Swal.fire('Erreur', 'Impossible de trouver le contenu du CV', 'error');
     return;
   }
-  
+
+  const cvText = cvPreview.innerText;
+
   Swal.fire({
     title: 'Analyse du CV en cours...', 
     text: 'L\'IA examine votre CV pour des améliorations.',
@@ -1768,18 +1775,16 @@ async function analyzeCVWithAI() {
   });
   
   try {
-    const cvText = document.getElementById('cv-preview').innerText;
-    
     const prompt = `
 Analyse ce CV et fournis des recommandations d'amélioration :
 
 ${cvText}
 
 Fournis une analyse structurée avec :
-1. Points forts du CV
-2. Points à améliorer
-3. Suggestions concrètes
-4. Note globale sur 10
+1.  **Points forts du CV**
+2.  **Points à améliorer**
+3.  **Suggestions concrètes**
+4.  **Note globale sur 10**
 
 Sois constructif et professionnel.
 `;
@@ -2165,6 +2170,8 @@ function loadRecruitmentBannerData() {
       bannerMessage: 'bannerMessage',
       bannerStyle: 'bannerStyle',
       bannerColor: 'bannerColor',
+      bannerTextColor: 'bannerTextColor',
+      bannerFont: 'bannerFont',
       bannerHeight: 'bannerHeight'
     };
 

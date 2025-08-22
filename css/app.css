@@ -30,16 +30,16 @@ img {
 }
 
 :root {
-  --primary-color: #8B5CF6; /* Vibrant Purple */
-  --primary-color-dark: #7C3AED; /* Darker Purple */
-  --secondary-color: #1E293B; /* Dark Slate */
-  --text-color: #E2E8F0; /* Light Gray */
-  --bg-color: #0F172A; /* Dark Blue-Gray */
-  --sidebar-bg: #1A202C; /* Slightly lighter dark blue-gray */
-  --main-bg: #F8FAFC; /* Off-white for main content */
-  --border-color: #334155; /* Darker Slate */
-  --input-bg: #CBD5E1; /* Light Gray for inputs */
-  --input-text-color: #1E293B; /* Dark Slate for input text */
+  --primary-color: #4F46E5; /* Indigo */
+  --primary-color-dark: #4338CA; /* Darker Indigo */
+  --secondary-color: #111827; /* Gray 900 */
+  --text-color: #F9FAFB; /* Gray 50 */
+  --bg-color: #F3F4F6; /* Gray 100 */
+  --sidebar-bg: #1F2937; /* Gray 800 */
+  --main-bg: #FFFFFF; /* White */
+  --border-color: #D1D5DB; /* Gray 300 */
+  --input-bg: #FFFFFF; /* White */
+  --input-text-color: #111827; /* Gray 900 */
   --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.2);
   --shadow-dark: 0 12px 24px rgba(0, 0, 0, 0.3);
@@ -666,11 +666,43 @@ label {
   display: flex;
   align-items: center;
   gap: 15px;
-  background-color: #F1F5F9; /* Light background for the banner */
   padding: 15px 20px;
   border-radius: 10px;
   margin-bottom: 25px;
   box-shadow: var(--shadow-light);
+  background-size: cover;
+  background-position: center;
+  color: var(--banner-text-color, #FFFFFF);
+  font-family: var(--banner-font, 'Arial, sans-serif');
+}
+
+.cv-recruitment-banner.modern {
+  background-image: linear-gradient(135deg, var(--banner-color, #3B82F6), var(--primary-color-dark));
+}
+
+.cv-recruitment-banner.classic {
+  background-color: var(--banner-color, #3B82F6);
+}
+
+.cv-recruitment-banner.minimal {
+  background-color: transparent;
+  border: 2px solid var(--banner-color, #3B82F6);
+  color: var(--banner-color, #3B82F6);
+}
+
+.cv-recruitment-banner.corporate {
+  background-color: #F8FAFC;
+  border-left: 5px solid var(--banner-color, #3B82F6);
+  color: var(--secondary-color, #1E293B);
+}
+
+.cv-recruitment-banner.magnificent {
+  background: linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%);
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 
 .cv-recruitment-banner .company-logo {
