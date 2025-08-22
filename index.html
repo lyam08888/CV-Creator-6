@@ -72,6 +72,18 @@
       </header>
       <nav class="app-nav">
         <details class="nav-group" open>
+          <summary>Gestion CV</summary>
+          <div class="cv-management-controls" style="padding: 10px;">
+            <select id="cvSelect" class="input" style="width: 100%; margin-bottom: 10px;"></select>
+            <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+              <button id="btnNewCV" type="button" class="btn btn-small">➕ Nouveau</button>
+              <button id="btnSaveCV" type="button" class="btn btn-small">💾 Sauvegarder</button>
+              <button id="btnDeleteCV" type="button" class="btn btn-small btn-danger">🗑️ Supprimer</button>
+              <button id="btnRenameCV" type="button" class="btn btn-small">✏️ Renommer</button>
+            </div>
+          </div>
+        </details>
+        <details class="nav-group" open>
           <summary>Profil</summary>
           <button class="nav-btn active" data-form="personal-info" data-tippy-content="Informations personnelles">Informations Personnelles</button>
           <button class="nav-btn" data-form="summary" data-tippy-content="Résumé professionnel">Résumé</button>

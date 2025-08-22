@@ -41,7 +41,7 @@ const exampleData = {
       startDate: "2021-03",
       endDate: "",
       current: true,
-      description: "• Direction d'une équipe de 5 développeurs sur des projets web complexes\n• Développement d'une plateforme SaaS utilisée par 10,000+ utilisateurs\n• Amélioration des performances de 40% grâce à l'optimisation du code\n• Mise en place de pratiques DevOps et CI/CD",
+      description: "• Direction d'une équipe de 5 développeurs sur des projets web complexes\n• Développement d\'une plateforme SaaS utilisée par 10,000+ utilisateurs\n• Amélioration des performances de 40% grâce à l\'optimisation du code\n• Mise en place de pratiques DevOps et CI/CD",
       technologies: ["React", "Node.js", "PostgreSQL", "AWS", "Docker"]
     },
     {
@@ -51,7 +51,7 @@ const exampleData = {
       startDate: "2019-01",
       endDate: "2021-02",
       current: false,
-      description: "• Développement from scratch d'une application e-commerce\n• Intégration de systèmes de paiement (Stripe, PayPal)\n• Optimisation SEO ayant augmenté le trafic de 200%\n• Formation des nouveaux développeurs",
+      description: "• Développement from scratch d\'une application e-commerce\n• Intégration de systèmes de paiement (Stripe, PayPal)\n• Optimisation SEO ayant augmenté le trafic de 200%\n• Formation des nouveaux développeurs",
       technologies: ["Vue.js", "Express.js", "MongoDB", "Redis"]
     },
     {
@@ -68,11 +68,11 @@ const exampleData = {
   education: [
     {
       degree: "Master en Informatique",
-      school: "École Supérieure d'Informatique de Paris",
+      school: "École Supérieure d\'Informatique de Paris",
       location: "Paris, France",
       startDate: "2015-09",
       endDate: "2017-06",
-      description: "Spécialisation en développement web et bases de données. Projet de fin d'études : développement d'une plateforme collaborative.",
+      description: "Spécialisation en développement web et bases de données. Projet de fin d\'études : développement d\'une plateforme collaborative.",
       grade: "Mention Très Bien"
     },
     {
@@ -146,6 +146,8 @@ const exampleData = {
 
 // Variables globales
 let editMode = false;
+let currentCVId = null;
+let allCVs = {}; // Object to store all CVs by ID
 
 // Initialisation de l'application
 document.addEventListener('DOMContentLoaded', function() {
@@ -155,7 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initFormHandlers();
   initPreview();
   loadSavedApiKey();
-  populateExampleData();
+  loadAllCVs(); // Load all CVs from localStorage
+  loadCurrentCV(); // Load the current CV or create a new one
   loadRecruitmentBannerData();
   generatePreviewWrapper();
   initBlocksTab();
@@ -179,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('CV Creator initialized successfully');
 });
 
-// INITIALISATION DE L'APERÇU
+// INITIALISATION DE L\'APERÇU
 function initPreview() {
   console.log('Initializing preview...');
   
@@ -237,6 +240,127 @@ function loadSavedApiKey() {
     document.getElementById('geminiApiKey').value = savedApiKey;
     console.log('Clé API Gemini chargée depuis le localStorage');
   }
+}
+
+// GESTION DES CVs
+function generateUniqueId() {
+  return 'cv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function loadAllCVs() {
+  const storedCVs = localStorage.getItem('allCVs');
+  if (storedCVs) {
+    allCVs = JSON.parse(storedCVs);
+  } else {
+    allCVs = {};
+  }
+  console.log('All CVs loaded:', Object.keys(allCVs));
+}
+
+function saveAllCVs() {
+  localStorage.setItem('allCVs', JSON.stringify(allCVs));
+  console.log('All CVs saved.');
+}
+
+function loadCurrentCV() {
+  const savedCVId = localStorage.getItem('currentCVId');
+  if (savedCVId && allCVs[savedCVId]) {
+    currentCVId = savedCVId;
+    fillFormWithData(allCVs[currentCVId].data);
+    console.log(`Loaded CV: ${currentCVId}`);
+  } else {
+    createNewCV('Mon premier CV'); // Create a default CV if none exists
+  }
+  updateCVListUI();
+}
+
+function createNewCV(name = 'Nouveau CV') {
+  const newCVId = generateUniqueId();
+  allCVs[newCVId] = {
+    id: newCVId,
+    name: name,
+    data: {} // Empty data for a new CV
+  };
+  currentCVId = newCVId;
+  fillFormWithData({}); // Clear the form
+  saveAllCVs();
+  updateCVListUI();
+  generatePreviewWrapper();
+  Swal.fire('Nouveau CV', `"${name}" a été créé.`, 'success');
+  console.log(`New CV created: ${newCVId}`);
+}
+
+function switchCV(cvId) {
+  if (currentCVId) {
+    // Save current CV before switching
+    allCVs[currentCVId].data = getFormData();
+    saveAllCVs();
+  }
+  currentCVId = cvId;
+  fillFormWithData(allCVs[currentCVId].data);
+  generatePreviewWrapper();
+  updateCVListUI();
+  localStorage.setItem('currentCVId', cvId);
+  Swal.fire('CV chargé', `"${allCVs[currentCVId].name}" a été chargé.`, 'success');
+  console.log(`Switched to CV: ${cvId}`);
+}
+
+function deleteCV(cvId) {
+  Swal.fire({
+    title: 'Êtes-vous sûr?',
+    text: "Vous ne pourrez pas revenir en arrière!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Oui, supprimer!',
+    cancelButtonText: 'Annuler'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      delete allCVs[cvId];
+      saveAllCVs();
+      if (currentCVId === cvId) {
+        const remainingCVIds = Object.keys(allCVs);
+        if (remainingCVIds.length > 0) {
+          switchCV(remainingCVIds[0]);
+        } else {
+          createNewCV(); // Create a new one if no CVs left
+        }
+      }
+      updateCVListUI();
+      Swal.fire('Supprimé!', 'Le CV a été supprimé.', 'success');
+      console.log(`CV deleted: ${cvId}`);
+    }
+  });
+}
+
+function renameCV(cvId, newName) {
+  if (allCVs[cvId]) {
+    allCVs[cvId].name = newName;
+    saveAllCVs();
+    updateCVListUI();
+    Swal.fire('Renommé!', 'Le CV a été renommé.', 'success');
+  }
+}
+
+function updateCVListUI() {
+  const cvSelect = document.getElementById('cvSelect');
+  if (!cvSelect) return;
+
+  cvSelect.innerHTML = ''; // Clear existing options
+
+  for (const id in allCVs) {
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = allCVs[id].name;
+    if (id === currentCVId) {
+      option.selected = true;
+    }
+    cvSelect.appendChild(option);
+  }
+
+  // Add event listener for switching CVs
+  cvSelect.onchange = (event) => switchCV(event.target.value);
 }
 
 // NAVIGATION
@@ -351,6 +475,9 @@ function initFormHandlers() {
   addSafeListener('btnNewCV', 'click', createNewCV);
   addSafeListener('btnResetToDemo', 'click', loadDemoData);
   addSafeListener('btnLoadDemo', 'click', loadDemoData);
+  addSafeListener('btnSaveCV', 'click', saveCurrentCVData);
+  addSafeListener('btnDeleteCV', 'click', () => deleteCV(currentCVId));
+  addSafeListener('btnRenameCV', 'click', promptRenameCV);
   
   // Gestionnaires pour la bannière de recrutement
   initRecruitmentBannerHandlers();
@@ -365,7 +492,7 @@ function initFormHandlers() {
   }
 }
 
-// FONCTIONS D'AJOUT D'ÉLÉMENTS
+// FONCTIONS D'AJOUT D\'ÉLÉMENTS
 function addExperience(data = null) {
   const container = document.getElementById('experience-list');
   const index = container.children.length;
@@ -430,6 +557,37 @@ function addExperience(data = null) {
   
   container.appendChild(div);
   return div;
+}
+
+// Save current CV data
+function saveCurrentCVData() {
+  if (currentCVId && allCVs[currentCVId]) {
+    allCVs[currentCVId].data = getFormData();
+    saveAllCVs();
+    Swal.fire('Sauvegardé!', 'Le CV actuel a été sauvegardé.', 'success');
+  }
+}
+
+// Prompt for renaming CV
+async function promptRenameCV() {
+  if (!currentCVId) return;
+
+  const { value: newName } = await Swal.fire({
+    title: 'Renommer le CV',
+    input: 'text',
+    inputLabel: 'Nouveau nom du CV',
+    inputValue: allCVs[currentCVId].name,
+    showCancelButton: true,
+    inputValidator: (value) => {
+      if (!value) {
+        return 'Veuillez saisir un nom pour le CV!';
+      }
+    }
+  });
+
+  if (newName) {
+    renameCV(currentCVId, newName);
+  }
 }
 
 function addEducation(data = null) {
@@ -589,7 +747,7 @@ function addCertification(data = null) {
         <input type="text" name="certifications[${index}][issuer]" class="input" value="${certData.issuer}">
       </div>
       <div class="form-group">
-        <label>Date d'obtention</label>
+        <label>Date d\'obtention</label>
         <input type="month" name="certifications[${index}][date]" class="input" value="${certData.date}">
       </div>
       <div class="form-group">
@@ -647,8 +805,8 @@ function addProject(data = null) {
       <button type="button" class="btn-ai" onclick="improveWithAI(this)">✨ Améliorer avec IA</button>
     </div>
     <div class="form-group">
-      <label>Technologies utilisées</label>
-      <input type="text" name="projects[${index}][technologies]" class="input" value="${projectData.technologies.join(', ')}" placeholder="React, Node.js, MongoDB...">
+      <label>Technologies utilisées (séparées par des virgules)</label>
+      <input type="text" name="projects[${index}][technologies]" class="input" value="${projectData.technologies.join(', ')}" placeholder="React, Node.js, PostgreSQL...">
     </div>
   `;
   
@@ -732,7 +890,7 @@ function debounce(func, wait) {
   };
 }
 
-// REMPLISSAGE AVEC DONNÉES D'EXEMPLE
+// REMPLISSAGE AVEC DONNÉES D\'EXEMPLE
 function populateExampleData() {
   console.log('Populating example data...');
   
@@ -779,7 +937,7 @@ function populateExampleData() {
   }
 }
 
-// GÉNÉRATION DE L'APERÇU
+// GÉNÉRATION DE L\'APERÇU
 
 function generatePreviewInternal() {
   console.log('Generating preview...');
@@ -984,7 +1142,7 @@ function generateSkills(data) {
   
   return `
     <div class="cv-section cv-skills" data-section="skills">
-      <h3 class="cv-section-title">Compétences</h3>
+      <h3 class="cv-section-title" contenteditable="false">Compétences</h3>
       ${skillsHtml}
     </div>
   `;
@@ -1002,7 +1160,7 @@ function generateLanguages(data) {
   
   return `
     <div class="cv-section cv-languages" data-section="languages">
-      <h3 class="cv-section-title">Langues</h3>
+      <h3 class="cv-section-title" contenteditable="false">Langues</h3>
       <div class="cv-languages-list">
         ${languagesHtml}
       </div>
@@ -1025,7 +1183,8 @@ function generateCertifications(data) {
   
   return `
     <div class="cv-section cv-certifications" data-section="certifications">
-      <h3 class="cv-section-title">Certifications</h3>
+      <div class="drag-handle">⋮⋮</div>
+      <h3 class="cv-section-title" contenteditable="false">Certifications</h3>
       ${certificationsHtml}
     </div>
   `;
@@ -1037,22 +1196,23 @@ function generateProjects(data) {
   const projectsHtml = data.projects.map(project => `
     <div class="cv-project-item">
       <div class="cv-project-header">
-        <h4 class="cv-project-name">${project.name}</h4>
-        <span class="cv-project-period">${formatDate(project.startDate)} - ${formatDate(project.endDate)}</span>
+        <h4 class="cv-project-name" contenteditable="false">${project.name}</h4>
+        <span class="cv-project-period" contenteditable="false">${formatDate(project.startDate)} - ${formatDate(project.endDate)}</span>
       </div>
-      <div class="cv-project-description">${project.description}</div>
+      <div class="cv-project-description" contenteditable="false">${project.description}</div>
       ${project.technologies && project.technologies.length > 0 ? `
         <div class="cv-technologies">
-          ${project.technologies.map(tech => `<span class="cv-tech-tag">${tech}</span>`).join('')}
+          ${project.technologies.map(tech => `<span class="cv-tech-tag" contenteditable="false">${tech}</span>`).join('')}
         </div>
       ` : ''}
-      ${project.url ? `<div class="cv-project-url"><a href="${project.url}" target="_blank">Voir le projet</a></div>` : ''}
+      ${project.url ? `<div class="cv-project-url" contenteditable="false"><a href="${project.url}" target="_blank">Voir le projet</a></div>` : ''}
     </div>
   `).join('');
   
   return `
     <div class="cv-section cv-projects" data-section="projects">
-      <h3 class="cv-section-title">Projets</h3>
+      <div class="drag-handle">⋮⋮</div>
+      <h3 class="cv-section-title" contenteditable="false">Projets</h3>
       ${projectsHtml}
     </div>
   `;
@@ -1121,7 +1281,7 @@ function saveDirectEdit(event) {
   const element = event.target;
   const section = element.closest('[data-section]');
   
-  if (!section) return;
+  if (!section) return; 
   
   const sectionType = section.dataset.section;
   const content = element.textContent.trim();
@@ -1435,7 +1595,7 @@ function saveApiKey() {
   if (!apiKey) {
     Swal.fire({
       icon: 'error',
-      title: 'Oops...',
+      title: 'Oops...', 
       text: 'Veuillez saisir une clé API Gemini valide.',
     });
     return;
@@ -1492,7 +1652,7 @@ Retourne UNIQUEMENT un objet JSON valide avec cette structure exacte :
   "experiences": [
     {
       "title": "Titre du poste",
-      "company": "Nom de l'entreprise",
+      "company": "Nom de l\'entreprise",
       "location": "Lieu",
       "startDate": "YYYY-MM",
       "endDate": "YYYY-MM ou vide si actuel",
@@ -1504,7 +1664,7 @@ Retourne UNIQUEMENT un objet JSON valide avec cette structure exacte :
   "education": [
     {
       "degree": "Nom du diplôme",
-      "school": "Nom de l'école",
+      "school": "Nom de l\'école",
       "location": "Lieu",
       "startDate": "YYYY-MM",
       "endDate": "YYYY-MM",
@@ -1864,6 +2024,9 @@ Retourne UNIQUEMENT le texte amélioré, sans guillemets.
 
 // FONCTION UTILITAIRE POUR REMPLIR LE FORMULAIRE
 function fillFormWithData(data) {
+  // Clear all form fields first
+  clearAllFormFields();
+
   // Informations personnelles
   if (data.fullName) document.getElementById('fullName').value = data.fullName;
   if (data.jobTitle) document.getElementById('jobTitle').value = data.jobTitle;
@@ -1875,16 +2038,7 @@ function fillFormWithData(data) {
   if (data.github) document.getElementById('github').value = data.github;
   if (data.summary) document.getElementById('summary-text').value = data.summary;
   
-  // Vider les listes existantes
-  document.getElementById('experience-list').innerHTML = '';
-  document.getElementById('education-list').innerHTML = '';
-  document.getElementById('technical-skills').innerHTML = '';
-  document.getElementById('soft-skills').innerHTML = '';
-  document.getElementById('languages-list').innerHTML = '';
-  document.getElementById('certifications-list').innerHTML = '';
-  document.getElementById('projects-list').innerHTML = '';
-
-  // Ajouter les expériences
+  // Expériences
   if (data.experiences) {
     data.experiences.forEach(exp => {
       if ((!exp.startDate || !exp.endDate) && exp.period) {
@@ -1913,12 +2067,12 @@ function fillFormWithData(data) {
     });
   }
   
-  // Ajouter les compétences techniques
+  // Compétences techniques
   if (data.technicalSkills) {
     data.technicalSkills.forEach(skill => addTechnicalSkill(skill));
   }
   
-  // Ajouter les compétences transversales
+  // Compétences transversales
   if (data.softSkills) {
     data.softSkills.forEach(skill => addSoftSkill(skill));
   }
@@ -2349,9 +2503,6 @@ function formatProjectPeriod(project) {
 
 
 
-
-
-
 // FONCTION POUR OPTIMISER MANUELLEMENT LES ESPACES
 async function optimizeSpacingManual() {
   const button = document.getElementById('btnOptimizeSpacing');
@@ -2460,7 +2611,36 @@ function optimizeSpacingBasic() {
     page.style.padding = '12mm 12mm 12mm 12mm';
   });
   
+  // Optimisation spécifique pour la bannière de recrutement
+  fixRecruitmentBannerSpacing();
+  
   console.log('Optimisation des espaces terminée');
+}
+
+// Fonction spécifique pour corriger l'espacement non sécable de la bannière
+function fixRecruitmentBannerSpacing() {
+  const banners = document.querySelectorAll('.cv-recruitment-banner');
+  
+  banners.forEach(banner => {
+    // Appliquer les propriétés d'espacement non sécable
+    banner.style.pageBreakInside = 'avoid';
+    banner.style.breakInside = 'avoid';
+    banner.style.pageBreakAfter = 'avoid';
+    banner.style.display = 'block';
+    banner.style.overflow = 'visible';
+    
+    // Assurer un espacement cohérent avec les autres sections
+    banner.style.marginBottom = 'var(--cv-section-spacing, 4mm)';
+    
+    // Optimiser le contenu interne de la bannière
+    const bannerContent = banner.querySelectorAll('h3, p, div');
+    bannerContent.forEach(element => {
+      element.style.pageBreakInside = 'avoid';
+      element.style.breakInside = 'avoid';
+    });
+  });
+  
+  console.log('Espacement de la bannière de recrutement optimisé');
 }
 
 // Wrapper pour generatePreview qui récupère les données du formulaire
@@ -2472,6 +2652,12 @@ function generatePreviewWrapper() {
     logSuccess('Form data retrieved successfully');
     generatePreviewInternal();
     logSuccess('Preview generated successfully');
+    
+    // Appliquer automatiquement la correction d'espacement non sécable
+    setTimeout(() => {
+      fixRecruitmentBannerSpacing();
+    }, 100);
+    
   } catch (error) {
     logError('Error in generatePreviewWrapper:', error);
   } finally {
